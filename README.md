@@ -1,0 +1,2 @@
+# AlterTUIInstaller
+AlterLinux向けに設計されたTUIインストーラーです。
