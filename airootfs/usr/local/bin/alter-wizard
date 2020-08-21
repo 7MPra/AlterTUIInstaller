@@ -18,6 +18,7 @@ if [ $? = 0 ] ; then
 fi
 sed -i s/#Server/Server/g /etc/pacman.d/mirrorlist
 pacman -Syy
+mkdir -p /mnt/install_disk
 mount $target /mnt/install_disk
 echo unpacking airootfs......
 mv /mnt/airootfs.sfs /mnt/install_disk/
