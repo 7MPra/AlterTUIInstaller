@@ -50,7 +50,7 @@ arch-chroot /mnt/install_disk useradd -m -g $user -s /bin/zsh $user
 echo "please type your password"
 arch-chroot /mnt/install_disk passwd $user
 arch-chroot /mnt/install_disk usermod -G sudo $user
-arch-chroot /mnt/install_disk grub-install --target=i386-pc --recheck $disk
+arch-chroot /mnt/install_disk grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=alter_grub
 arch-chroot /mnt/install_disk grub-mkconfig -o /boot/grub/grub.cfg
 rm -f airootfs.sfs
 cd
