@@ -31,7 +31,7 @@ unsquashfs airootfs.sfs
 mv squashfs-root/* ./
 genfstab -U /mnt/install_disk >> /mnt/install_disk/etc/fstab
 sleep 1
-user=$(dialog --no-cancel --inputbox "please insert your username" 10 35  3>&1 1>&2 2>&3 3>&-)
+user=$(input_tui "please insert your username")
 arch-chroot /mnt/install_disk pacman-key --init
 arch-chroot /mnt/install_disk pacman-key --populate archlinux
 arch-chroot /mnt/install_disk pacman-key --populate alterlinux
@@ -49,11 +49,11 @@ arch-chroot /mnt/install_disk rm -rf /etc/initcpio
 arch-chroot /mnt/install_disk rm -rf /etc/udev/rules.d/81-dhcpcd.rules
 arch-chroot /mnt/install_disk rm -rf /etc/systemd/system/{choose-mirror.service,getty@tty1.service.d}
 arch-chroot /mnt/install_disk sed -i 's/Storage=volatile/#Storage=auto/' /etc/systemd/journald.conf
-arch-chroot /mnt/install_disk groupadd $user
-arch-chroot /mnt/install_disk useradd -m -g $user -s /bin/zsh $user
+arch-chroot /mnt/install_disk groupadd ${user}
+arch-chroot /mnt/install_disk useradd -m -g ${user} -s /bin/zsh $user
 echo "please type your password"
-arch-chroot /mnt/install_disk passwd $user
-arch-chroot /mnt/install_disk usermod -G sudo $user
+arch-chroot /mnt/install_disk passwd ${user}
+arch-chroot /mnt/install_disk usermod -G sudo ${user}
 arch-chroot /mnt/install_disk grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=alter_grub
 arch-chroot /mnt/install_disk grub-mkconfig -o /boot/grub/grub.cfg
 rm -f airootfs.sfs
