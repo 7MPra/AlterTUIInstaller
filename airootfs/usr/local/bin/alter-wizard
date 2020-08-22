@@ -16,16 +16,20 @@ select_part_tui() {
     ${1} 15 35 10 $(find ${2}?* -printf "%p ") \
     3>&1 1>&2 2>&3 3>&-)
 }
+#Usage: run_chroot <command>
+run_chroot() {
+    arch-chroot /mnt/install_disk ${@}
+}
 loadkeys $(input_tui "please insert your keybord type")
 dialog --yesno "Will you be setting network?" 15 35
 if [ $? = 0 ] ; then
     nmtui
 fi
 disk=$(select_disk_tui "please select target disk")
-cfdisk $disk
+cfdisk ${disk}
 sleep 1
 target=$(select_part_tui "please select target partition" ${disk})
-mkfs.ext4 $target
+mkfs.ext4 ${target}
 dialog --yesno "Will you use SWAP partition?" 15 35
 if [ $? = 0 ] ; then
     swap=$(select_part_tui "please select swap partition" ${disk})
@@ -45,30 +49,30 @@ mv squashfs-root/* ./
 genfstab -U /mnt/install_disk >> /mnt/install_disk/etc/fstab
 sleep 1
 user=$(input_tui "please insert your username")
-arch-chroot /mnt/install_disk pacman-key --init
-arch-chroot /mnt/install_disk pacman-key --populate archlinux
-arch-chroot /mnt/install_disk pacman-key --populate alterlinux
-arch-chroot /mnt/install_disk userdel -r alter
-arch-chroot /mnt/install_disk rm -rf /etc/skel/Desktop
-arch-chroot /mnt/install_disk rm -rf /etc/skel/.config/gtk-3.0/bookmarks
-arch-chroot /mnt/install_disk rm -rf /root/Desktop/calamares.desktop
-arch-chroot /mnt/install_disk rm -rf /usr/share/calamares/
-arch-chroot /mnt/install_disk rm -rf /etc/polkit-1/rules.d/01-nopasswork.rules
-arch-chroot /mnt/install_disk rm -rf /etc/systemd/system/getty@tty1.service.d/autologin.conf
-arch-chroot /mnt/install_disk rm -rf /etc/sudoers.d/alterlive
-arch-chroot /mnt/install_disk rm -rf /root/.automated_script.sh
-arch-chroot /mnt/install_disk rm -rf /etc/mkinitcpio-archiso.conf
-arch-chroot /mnt/install_disk rm -rf /etc/initcpio
-arch-chroot /mnt/install_disk rm -rf /etc/udev/rules.d/81-dhcpcd.rules
-arch-chroot /mnt/install_disk rm -rf /etc/systemd/system/{choose-mirror.service,getty@tty1.service.d}
-arch-chroot /mnt/install_disk sed -i 's/Storage=volatile/#Storage=auto/' /etc/systemd/journald.conf
-arch-chroot /mnt/install_disk groupadd ${user}
-arch-chroot /mnt/install_disk useradd -m -g ${user} -s /bin/zsh $user
+run_chroot pacman-key --init
+run_chroot pacman-key --populate archlinux
+run_chroot pacman-key --populate alterlinux
+run_chroot userdel -r alter
+run_chroot rm -rf /etc/skel/Desktop
+run_chroot rm -rf /etc/skel/.config/gtk-3.0/bookmarks
+run_chroot rm -rf /root/Desktop/calamares.desktop
+run_chroot rm -rf /usr/share/calamares/
+run_chroot rm -rf /etc/polkit-1/rules.d/01-nopasswork.rules
+run_chroot rm -rf /etc/systemd/system/getty@tty1.service.d/autologin.conf
+run_chroot rm -rf /etc/sudoers.d/alterlive
+run_chroot rm -rf /root/.automated_script.sh
+run_chroot rm -rf /etc/mkinitcpio-archiso.conf
+run_chroot rm -rf /etc/initcpio
+run_chroot rm -rf /etc/udev/rules.d/81-dhcpcd.rules
+run_chroot rm -rf /etc/systemd/system/{choose-mirror.service,getty@tty1.service.d}
+run_chroot sed -i 's/Storage=volatile/#Storage=auto/' /etc/systemd/journald.conf
+run_chroot groupadd ${user}
+run_chroot useradd -m -g ${user} -s /bin/zsh $user
 echo "please type your password"
-arch-chroot /mnt/install_disk passwd ${user}
-arch-chroot /mnt/install_disk usermod -G sudo ${user}
-arch-chroot /mnt/install_disk grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=alter_grub
-arch-chroot /mnt/install_disk grub-mkconfig -o /boot/grub/grub.cfg
+run_chroot passwd ${user}
+run_chroot usermod -G sudo ${user}
+run_chroot grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=alter_grub
+run_chroot grub-mkconfig -o /boot/grub/grub.cfg
 rm -f airootfs.sfs
 cd
 umount /mnt/install_disk
