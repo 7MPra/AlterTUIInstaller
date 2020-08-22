@@ -1,4 +1,18 @@
 #!/bin/bash
+input_tui() {
+    echo $(dialog --no-cancel --inputbox ${1}\
+    10 35 3>&1 1>&2 2>&3 3>&-)
+}
+select_disk_tui() {
+    echo $(dialog --no-items --no-cancel --menu \
+    ${1} 15 35 10 $(find /dev/?d? -printf "%p ") \
+    3>&1 1>&2 2>&3 3>&- )
+}
+select_part_tui() {
+    echo $(dialog --no-items --no-cancel --menu \
+    ${1} 15 35 10 $(find ${2}?* -printf "%p ") \
+    3>&1 1>&2 2>&3 3>&-)
+}
 layout=$(dialog --no-cancel --inputbox "please insert your keybord type" 10 35 3>&1 1>&2 2>&3 3>&-)
 loadkeys $layout
 dialog --yesno "Will you be setting network?" 15 35
