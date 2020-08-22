@@ -24,22 +24,19 @@ fi
 disk=$(select_disk_tui "please select target disk")
 cfdisk $disk
 sleep 1
-efi=$(dialog --no-items --no-cancel --menu "please select efi partition" 15 35 10 `find $disk?* -printf "%p "` 3>&1 1>&2 2>&3 3>&-)
-mkfs.vfat -F32 $efi
-target=$(dialog --no-items --no-cancel --menu "please select target partition" 15 35 10 `find $disk?* -printf "%p "` 3>&1 1>&2 2>&3 3>&-)
+target=$(select_part_tui "please select target partition" ${disk})
 mkfs.ext4 $target
 dialog --yesno "Will you use SWAP partition?" 15 35
 if [ $? = 0 ] ; then
-    swap=$(dialog --no-items --no-cancel --menu "please select swap partition" 15 35 10 `find $disk?* -printf "%p "` 3>&1 1>&2 2>&3 3>&-)
-    mkswap $swap
-    swapon $swap
+    swap=$(select_part_tui "please select swap partition" ${disk})
+    mkswap ${swap}
+    swapon ${swap}
 fi
 sed -i s/#Server/Server/g /etc/pacman.d/mirrorlist
 pacman -Syy
 mkdir -p /mnt/install_disk
-mount $target /mnt/install_disk
+mount ${target} /mnt/install_disk
 mkdir -p /mnt/install_disk/boot
-mount $efi /mnt/install_disk/boot
 echo unpacking airootfs......
 mv /mnt/airootfs.sfs /mnt/install_disk/
 cd /mnt/install_disk/
