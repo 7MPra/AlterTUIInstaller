@@ -1,13 +1,16 @@
 #!/bin/bash
+#Usage: input_tui <str>
 input_tui() {
-    echo $(dialog --no-cancel --inputbox ${1}\
-    10 35 3>&1 1>&2 2>&3 3>&-)
+    echo $(dialog --no-cancel --inputbox \
+    ${1} 10 35 3>&1 1>&2 2>&3 3>&-)
 }
+#Usage: select_disk_tui <str>
 select_disk_tui() {
     echo $(dialog --no-items --no-cancel --menu \
     ${1} 15 35 10 $(find /dev/?d? -printf "%p ") \
     3>&1 1>&2 2>&3 3>&- )
 }
+#Usage: select_part_tui <str> <target>
 select_part_tui() {
     echo $(dialog --no-items --no-cancel --menu \
     ${1} 15 35 10 $(find ${2}?* -printf "%p ") \
