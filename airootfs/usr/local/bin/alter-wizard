@@ -5,7 +5,7 @@ input_tui() {
     ${1} 10 35 3>&1 1>&2 2>&3 3>&-)
 }
 #Usage: select_disk_tui <str>
-select_disk_tui() {
+}select_disk_tui() {
     echo $(dialog --no-items --no-cancel --menu \
     ${1} 15 35 10 $(find /dev/?d? -printf "%p ") \
     3>&1 1>&2 2>&3 3>&- )
@@ -16,13 +16,12 @@ select_part_tui() {
     ${1} 15 35 10 $(find ${2}?* -printf "%p ") \
     3>&1 1>&2 2>&3 3>&-)
 }
-layout=$(dialog --no-cancel --inputbox "please insert your keybord type" 10 35 3>&1 1>&2 2>&3 3>&-)
-loadkeys $layout
+loadkeys $(input_tui "please insert your keybord type")
 dialog --yesno "Will you be setting network?" 15 35
 if [ $? = 0 ] ; then
     nmtui
 fi
-disk=$(dialog --no-items --no-cancel --menu "please select target disk" 15 35 10 `find /dev/?d? -printf "%p "` 3>&1 1>&2 2>&3 3>&- )
+disk=$(select_disk_tui "please select target disk")
 cfdisk $disk
 sleep 1
 efi=$(dialog --no-items --no-cancel --menu "please select efi partition" 15 35 10 `find $disk?* -printf "%p "` 3>&1 1>&2 2>&3 3>&-)
