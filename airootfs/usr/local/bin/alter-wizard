@@ -22,7 +22,7 @@ run_chroot() {
 }
 loadkeys $(input_tui "please insert your keybord type")
 dialog --yesno "Will you be setting network?" 15 35
-if [ $? = 0 ] ; then
+if [[ $? = 0 ]] ; then
     nmtui
 fi
 disk=$(select_disk_tui "please select target disk")
@@ -43,15 +43,15 @@ if [[ -e /sys/firmware/efi/efivars ]]; then
     fi
     mkfs.ext4 ${target}
 else
-    parted ${disk} mklabel msdos mkpart primary ext4 1MiB 100MiB
+    parted ${disk} mklabel msdos mkpart primary ext4 1MiB 200MiB
     parted ${disk} set 1 boot on
     mkfs.ext4 ${disk}1
     dialog --yesno "Will you use SWAP partition?" 15 35
     if [[ $? = 0 ]] ; then
-        parted ${disk} mkpart primary linux-swap 100MiB 4GiB
+        parted ${disk} mkpart primary linux-swap 200MiB 4.2GiB
         mkswap ${disk}2
         swapon ${disk}2
-        parted ${disk} mkpart primary ext4 4.5GiB 100%
+        parted ${disk} mkpart primary ext4 4.2GiB 100%
         target=${disk}3
     else
         parted ${disk} mkpart primary ext4 100MiB 100%
@@ -95,8 +95,13 @@ run_chroot useradd -m -g ${user} -s /bin/zsh $user
 echo "please type your password"
 run_chroot passwd ${user}
 run_chroot usermod -G sudo ${user}
-run_chroot grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=alter_grub
-run_chroot grub-mkconfig -o /boot/grub/grub.cfg
+if [[ -e /sys/firmware/efi/efivars ]]; then
+    run_chroot grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
+    run_chroot grub-mkconfig -o /boot/grub/grub.cfg
+else
+    run_chroot grub-install --target=i386-pc --recheck ${target}
+    run_chroot grub-mkconfig -o /boot/grub/grub.cfg
+fi
 rm -f airootfs.sfs
 cd
 umount -R /mnt/install_disk
