@@ -26,21 +26,45 @@ if [ $? = 0 ] ; then
     nmtui
 fi
 disk=$(select_disk_tui "please select target disk")
-cfdisk ${disk}
-sleep 1
-target=$(select_part_tui "please select target partition" ${disk})
-mkfs.ext4 ${target}
-dialog --yesno "Will you use SWAP partition?" 15 35
-if [ $? = 0 ] ; then
-    swap=$(select_part_tui "please select swap partition" ${disk})
-    mkswap ${swap}
-    swapon ${swap}
+if [[ -e /sys/firmware/efi/efivars ]]; then
+    parted ${disk} mklabel gpt mkpart ESP fat32 1MiB 551MiB
+    parted ${disk} set 1 esp on
+    mkfs.vfat -F32 ${disk}1
+    dialog --yesno "Will you use SWAP partition?" 15 35
+    if [[ $? = 0 ]] ; then
+        parted ${disk} mkpart primary linux-swap 551MiB 4.5GiB
+        mkswap ${disk}2
+        swapon ${disk}2
+        parted ${disk} mkpart primary ext4 4.5GiB 100%
+        target=${disk}3
+    else
+        parted ${disk} mkpart primary ext4 551MiB 100%
+        target=${disk}2
+    fi
+    mkfs.ext4 ${target}
+else
+    parted ${disk} mklabel msdos mkpart primary ext4 1MiB 100MiB
+    parted ${disk} set 1 boot on
+    mkfs.ext4 ${disk}1
+    dialog --yesno "Will you use SWAP partition?" 15 35
+    if [[ $? = 0 ]] ; then
+        parted ${disk} mkpart primary linux-swap 100MiB 4GiB
+        mkswap ${disk}2
+        swapon ${disk}2
+        parted ${disk} mkpart primary ext4 4.5GiB 100%
+        target=${disk}3
+    else
+        parted ${disk} mkpart primary ext4 100MiB 100%
+        target=${disk}2
+    fi
+    mkfs.ext4 ${target}
 fi
 sed -i s/#Server/Server/g /etc/pacman.d/mirrorlist
 pacman -Syy
 mkdir -p /mnt/install_disk
 mount ${target} /mnt/install_disk
 mkdir -p /mnt/install_disk/boot
+mount ${disk}1 /mnt/install_disk/boot
 echo unpacking airootfs......
 mv /mnt/airootfs.sfs /mnt/install_disk/
 cd /mnt/install_disk/
@@ -75,4 +99,4 @@ run_chroot grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-i
 run_chroot grub-mkconfig -o /boot/grub/grub.cfg
 rm -f airootfs.sfs
 cd
-umount /mnt/install_disk
+umount -R /mnt/install_disk
