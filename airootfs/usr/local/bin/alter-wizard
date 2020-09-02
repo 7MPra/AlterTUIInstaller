@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/zsh
 #Usage: input_tui <str>
 input_tui() {
     echo $(dialog --no-cancel --inputbox \
     ${1} 10 35 3>&1 1>&2 2>&3 3>&-)
 }
 #Usage: select_disk_tui <str>
-}select_disk_tui() {
+select_disk_tui() {
     echo $(dialog --no-items --no-cancel --menu \
     ${1} 15 35 10 $(find /dev/?d? -printf "%p ") \
     3>&1 1>&2 2>&3 3>&- )
@@ -43,7 +43,7 @@ if [[ -e /sys/firmware/efi/efivars ]]; then
     fi
     mkfs.ext4 ${target}
 else
-    parted ${disk} mklabel msdos mkpart primary ext4 1MiB 200MiB
+    parted ${disk} mklabel msdos mkpart primary ext4 0% 200MiB
     parted ${disk} set 1 boot on
     mkfs.ext4 ${disk}1
     dialog --yesno "Will you use SWAP partition?" 15 35
